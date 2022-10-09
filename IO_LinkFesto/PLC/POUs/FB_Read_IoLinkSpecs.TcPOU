@@ -21,7 +21,7 @@ END_VAR
 VAR
      bExecuteOld         : BOOL;
      nState              : INT := 0;
-     fbIolSlave          : FB_IolStdVarSlave;
+     fbIolVarSlave          : FB_IolStdVarSlave;
      bInitDone           : BOOL := FALSE;
      hr                  : HRESULT;
      sApplicationTagRead : STRING(32) := '';
@@ -32,9 +32,9 @@ END_VAR]]></Declaration>
 //
 IF NOT bInitDone THEN
      bInitDone                 := TRUE;
-     fbIolSlave.MasterAoeNetId := F_CreateAmsNetId(sAmsNetID); //Creates NETID String
-     fbIolSlave.Port           := Port;
-     fbIolSlave.Name           := Name;
+     fbIolVarSlave.MasterAoeNetId := F_CreateAmsNetId(sAmsNetID); //Creates NETID String
+     fbIolVarSlave.Port           := Port;
+     fbIolVarSlave.Name           := Name;
 END_IF
 
 ////
@@ -63,13 +63,13 @@ CASE nState OF
      0: ;
 
      // WRITE
-     10: hr := fbIolSlave.WriteApplicationSpecificTag(sApplicationTag);
+     10: hr := fbIolVarSlave.WriteApplicationSpecificTag(sApplicationTag);
 
           IF NOT F_IolIsBusy(hr) THEN
                IF FAILED(hr) THEN
                     bBusy     := FALSE;
                     bError    := TRUE;
-                    sErrorTxt := fbIolSlave.ErrorTxt; // TODO
+                    sErrorTxt := fbIolVarSlave.ErrorTxt; // TODO
                     nAdsError := F_IolGetAdsError(hr);
                     nIolError := F_IolGetIolError(hr);
                     nState    := 0; // IDLE;
@@ -79,13 +79,13 @@ CASE nState OF
           END_IF
 
      // READ
-     20: hr := fbIolSlave.ReadApplicationSpecificTag(sApplicationTagRead);
+     20: hr := fbIolVarSlave.ReadApplicationSpecificTag(sApplicationTagRead);
 
           IF NOT F_IolIsBusy(hr) THEN
                IF FAILED(hr) THEN
                     bBusy     := FALSE;
                     bError    := TRUE;
-                    sErrorTxt := fbIolSlave.ErrorTxt; // TODO
+                    sErrorTxt := fbIolVarSlave.ErrorTxt; // TODO
                     nAdsError := F_IolGetAdsError(hr);
                     nIolError := F_IolGetIolError(hr);
                     nState    := 0; // IDLE;
@@ -109,7 +109,7 @@ END_CASE
 ////
 // call FBs
 //
-fbIolSlave();]]></ST>
+fbIolVarSlave();]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>

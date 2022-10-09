@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="Festo_IoLink_VacumEjector_OVEM_H_CE" Id="{b6245ee7-b1b9-443b-84b3-5d7151a3bb6b}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK Festo_IoLink_VacumEjector_OVEM_H_CE
+VAR_INPUT
+     Enable         : BOOL; // Read parameters
+     SetParameters  : BOOL; // Set parameters
+     Execute        : BOOL       := FALSE;
+     ApplicationTag : STRING(32) := '';
+     AmsNetID       : STRING;
+     Port           : UINT;
+     Name           : STRING(255);
+END_VAR
+VAR_OUTPUT
+     Busy     : BOOL        := FALSE;
+     Done     : BOOL        := FALSE;
+     Error    : BOOL        := FALSE;
+     AdsError : E_AdsErr    := E_AdsErr.NOERR;
+     IolError : E_IolError  := E_IolError.NoError;
+     ErrorTxt : STRING(255) := '';
+END_VAR
+VAR
+     ExecuteOld         : BOOL;
+     InitDone           : BOOL       := FALSE;
+     State              : INT        := 0;
+     ApplicationTagRead : STRING(32) := '';
+     fbIolSlave         : FB_IolStdVarSlave;
+     fbIolVarSlave      : FB_IolSlave;
+     hr                 : HRESULT;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="ReadApplicationTag" Id="{b0d51dd5-7959-4151-a6db-a6937abebc2d}">
+      <Declaration><![CDATA[METHOD PUBLIC ReadApplicationTag : udint
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>
