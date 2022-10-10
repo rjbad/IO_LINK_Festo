@@ -3,36 +3,47 @@
   <POU Name="Festo_IoLink_VacumEjector_OVEM_H_CE" Id="{b6245ee7-b1b9-443b-84b3-5d7151a3bb6b}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK Festo_IoLink_VacumEjector_OVEM_H_CE
 VAR_INPUT
-     Enable         : BOOL; // Read parameters
-     SetParameters  : BOOL; // Set parameters
-     Execute        : BOOL       := FALSE;
-     ApplicationTag : STRING(32) := '';
-     AmsNetID       : STRING;
-     Port           : UINT;
-     Name           : STRING(255);
+     ReadParameters : BOOL;             // Read parameters
+     SetParameters  : BOOL;             // Set parameters
+     ApplicationTag : STRING(32) := ''; // Application Tag 
+     AmsNetID       : STRING;           // AMS Net ID 
+     Port           : UINT;             // Port on IO link terminal 
+     Name           : STRING(255);      // Name of IO link device
 END_VAR
 VAR_OUTPUT
-     Busy     : BOOL        := FALSE;
-     Done     : BOOL        := FALSE;
-     Error    : BOOL        := FALSE;
-     AdsError : E_AdsErr    := E_AdsErr.NOERR;
-     IolError : E_IolError  := E_IolError.NoError;
-     ErrorTxt : STRING(255) := '';
+     Busy               : BOOL        := FALSE;
+     Done               : BOOL        := FALSE;
+     Error              : BOOL        := FALSE;
+     ApplicationTagRead : STRING(32)  := '';
+     AdsError           : E_AdsErr    := E_AdsErr.NOERR;
+     IolError           : E_IolError  := E_IolError.NoError;
+     ErrorTxt           : STRING(255) := '';
 END_VAR
 VAR
-     ExecuteOld         : BOOL;
-     InitDone           : BOOL       := FALSE;
-     State              : INT        := 0;
-     ApplicationTagRead : STRING(32) := '';
-     fbIolSlave         : FB_IolStdVarSlave;
-     fbIolVarSlave      : FB_IolSlave;
-     hr                 : HRESULT;
+     _InitDone       : BOOL := FALSE;
+     _ReadParameters : BOOL; // Read parameters
+     _SetParameters  : BOOL; // Set parameters
+     _ApplicationTag : STRING(32) := '';
+     _ReadState      : INT        := 0;
+     _SetState       : INT        := 0;
+     _fbIolSlave     : FB_IolStdVarSlave;
+     _fbIolVarSlave  : FB_IolSlave;
+     _hr             : HRESULT;
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[]]></ST>
     </Implementation>
     <Method Name="ReadApplicationTag" Id="{b0d51dd5-7959-4151-a6db-a6937abebc2d}">
-      <Declaration><![CDATA[METHOD PUBLIC ReadApplicationTag : udint
+      <Declaration><![CDATA[METHOD PRIVATE ReadApplicationTag : UDINT
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="WriteApplicationTag" Id="{0004d753-af26-41e9-a2f2-32c49d39e4f1}">
+      <Declaration><![CDATA[METHOD PRIVATE WriteApplicationTag : UDINT
 VAR_INPUT
 END_VAR
 ]]></Declaration>
