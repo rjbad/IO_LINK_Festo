@@ -3,51 +3,52 @@
   <POU Name="Festo_IoLink_VacumEjector_OVEM_H_CE" Id="{b6245ee7-b1b9-443b-84b3-5d7151a3bb6b}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK Festo_IoLink_VacumEjector_OVEM_H_CE
 VAR_INPUT
-     ReadParameters  : BOOL;             // Read parameters
-     WriteParameters : BOOL;             // Set parameters
-     Reset           : BOOL;             // Reset application 
-     ApplicationTag  : STRING(32) := ''; // Application Tag 
-     AmsNetID        : AMSNETID;         // AMS Net ID 
+     ReadParameters  : BOOL;             // Read parameters - starts on rising trigger 
+     WriteParameters : BOOL;             // Set parameters  - starts on rising trigger
+     Reset           : BOOL;             // Reset application  - Reset sequence. 
+     ApplicationTag  : STRING(32) := ''; // Application Tag to be writen to IO Link Device 
+     AirSaveFunction : BOOL;             // Parameter Air Safe function
+     AutoDropTime    : UINT;             // Auto drop time - 0x0198 - default Value: 80
+     AmsNetID        : AMSNETID;         // AoeNetId from IO link terminal    
      Port            : UINT;             // Port on IO link terminal 
-     Name            : STRING(255);      // Name of IO link device
+     Name            : STRING(255);      // Name of IO link device ??
 END_VAR
 VAR_OUTPUT
-     Busy               : BOOL       := FALSE;
-     Done               : BOOL       := FALSE;
-     Error              : BOOL       := FALSE;
-     ApplicationTagRead : STRING(32) := '';
-     AirSaveFunction    : BOOL;
-     AutoDropTime       : INT; // 0x0198 - 80 
-     AdsError           : E_AdsErr    := E_AdsErr.NOERR;
-     IolError           : E_IolError  := E_IolError.NoError;
-     ErrorTxt           : STRING(255) := '';
+     Busy                : BOOL := FALSE;
+     Done                : BOOL := FALSE;
+     Error               : BOOL := FALSE;
+     ProductId           : STRING;
+     ApplicationTagRead  : STRING(32) := '';
+     AirSaveFunctionRead : BOOL; // Air safe function 
+     ParametersRead      : BOOL; // if this i ok, the parameters is read
+
+     AutoDropTimeRead : INT; // 0x0198 - 80 
+     AdsError         : E_AdsErr    := E_AdsErr.NOERR;
+     IolError         : E_IolError  := E_IolError.NoError;
+     ErrorTxt         : STRING(255) := '';
 END_VAR
 VAR
      _InitDone           : BOOL := FALSE;
      _ReadParameters     : BOOL; // Read parameters
      _SetParameters      : BOOL; // Set parameters
      _ApplicationTagRead : STRING(32) := '';
-     _ReadState          : INT        := 0;
-     _SetState           : INT        := 0;
      _fbIolSlave         : FB_IolStdVarSlave;
      _fbIolVarSlave      : FB_IolSlave;
      _hr                 : HRESULT;
-     Start               : BOOL;
-
-     _State : INT; // case state	
-
-     _rtReadParameter  : R_TRIG;
-     _rtWriteParameter : R_TRIG;
+     _State              : INT; // case state	
+     _rtReadParameter    : R_TRIG;
+     _rtWriteParameter   : R_TRIG;
 
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[_rtReadParameter(CLK := ReadParameters);
+      <ST><![CDATA[
+// Triggers for start sequence.
+_rtReadParameter(CLK := ReadParameters);
 _rtWriteParameter(CLK := WriteParameters);
 
 CASE _State OF
 
      00: //Init 
-          _InitDone                  := TRUE;
           _fbIolSlave.MasterAoeNetId := F_CreateAmsNetId(AmsNetID); //Creates NETID String
           _fbIolSlave.Port           := Port;
           _fbIolSlave.Name           := Name;
@@ -73,9 +74,9 @@ CASE _State OF
                     ErrorTxt   := _fbIolSlave.ErrorTxt; // TODO
                     AdsError   := F_IolGetAdsError(_hr);
                     IolError   := F_IolGetIolError(_hr);
-                    _ReadState := 999; // Error;
+                    _State := 999; // Error;
                ELSE
-                    _ReadState := 30; // CHECK;
+                    _State := 30; // CHECK;
                END_IF
           END_IF
 		30: // Read
