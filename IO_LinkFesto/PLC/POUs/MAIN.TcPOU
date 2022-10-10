@@ -3,13 +3,17 @@
   <POU Name="MAIN" Id="{c0a69bbd-f10e-4371-b8f4-dcd0f6bb0d31}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
-     Festo    : Festo_IoLink_VacumEjector_OVEM_H_CE;
-     Execute  : BOOL;
-     amsNetId : AMSNETID;
-     netid    : AmsNetId;
+     Festo           : Festo_IoLink_VacumEjector_OVEM_H_CE;
+     Execute         : BOOL;
+     amsNetId AT %I* : AMSNETID;
+     netid    AT %I* : T_AmsNetId;
+
+     Port AT %I* : UINT;
+
+     pressure AT %I* : UINT;
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[]]></ST>
+      <ST><![CDATA[IO_Link();]]></ST>
     </Implementation>
     <Action Name="IO_Link" Id="{849431fe-ca07-4d14-a60e-5c9c0c19d635}">
       <Implementation>
@@ -46,13 +50,13 @@ END_VAR]]></Declaration>
                           <v n="LValue">false</v>
                           <v n="Boolean">false</v>
                           <v n="IsInstance">true</v>
-                          <v n="Id">27L</v>
+                          <v n="Id">33L</v>
                         </o>
                         <o n="OutputItems" t="OutputItemList">
                           <l2 n="OutputItems" cet="Operand">
                             <n />
                             <o>
-                              <v n="Operand">"???"</v>
+                              <v n="Operand">""</v>
                               <v n="Type">"BOOL"</v>
                               <v n="Comment">""</v>
                               <v n="SymbolComment">""</v>
@@ -68,7 +72,7 @@ END_VAR]]></Declaration>
                               <v n="Id">10L</v>
                             </o>
                             <o>
-                              <v n="Operand">"???"</v>
+                              <v n="Operand">""</v>
                               <v n="Type">"BOOL"</v>
                               <v n="Comment">""</v>
                               <v n="SymbolComment">""</v>
@@ -84,7 +88,23 @@ END_VAR]]></Declaration>
                               <v n="Id">11L</v>
                             </o>
                             <o>
-                              <v n="Operand">"???"</v>
+                              <v n="Operand">""</v>
+                              <v n="Type">"STRING(32)"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">true</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">35L</v>
+                            </o>
+                            <o>
+                              <v n="Operand">""</v>
                               <v n="Type">"E_AdsErr"</v>
                               <v n="Comment">""</v>
                               <v n="SymbolComment">""</v>
@@ -100,7 +120,7 @@ END_VAR]]></Declaration>
                               <v n="Id">12L</v>
                             </o>
                             <o>
-                              <v n="Operand">"???"</v>
+                              <v n="Operand">""</v>
                               <v n="Type">"E_IolError"</v>
                               <v n="Comment">""</v>
                               <v n="SymbolComment">""</v>
@@ -116,7 +136,7 @@ END_VAR]]></Declaration>
                               <v n="Id">13L</v>
                             </o>
                             <o>
-                              <v n="Operand">"???"</v>
+                              <v n="Operand">""</v>
                               <v n="Type">"STRING(255)"</v>
                               <v n="Comment">""</v>
                               <v n="SymbolComment">""</v>
@@ -142,7 +162,7 @@ END_VAR]]></Declaration>
                         <l2 n="InputItems" cet="BoxTreeOperand">
                           <o>
                             <o n="Operand" t="Operand">
-                              <v n="Operand">"???"</v>
+                              <v n="Operand">"TRUE"</v>
                               <v n="Type">"BOOL"</v>
                               <v n="Comment">""</v>
                               <v n="SymbolComment">""</v>
@@ -161,7 +181,7 @@ END_VAR]]></Declaration>
                           </o>
                           <o>
                             <o n="Operand" t="Operand">
-                              <v n="Operand">"???"</v>
+                              <v n="Operand">"FALSE"</v>
                               <v n="Type">"BOOL"</v>
                               <v n="Comment">""</v>
                               <v n="SymbolComment">""</v>
@@ -177,25 +197,6 @@ END_VAR]]></Declaration>
                               <v n="Id">32L</v>
                             </o>
                             <v n="Id">31L</v>
-                          </o>
-                          <o>
-                            <o n="Operand" t="Operand">
-                              <v n="Operand">"Execute"</v>
-                              <v n="Type">"BOOL"</v>
-                              <v n="Comment">""</v>
-                              <v n="SymbolComment">""</v>
-                              <v n="Address">""</v>
-                              <o n="Flags" t="Flags">
-                                <v n="Flags">0</v>
-                                <v n="Fixed">false</v>
-                                <v n="Extensible">false</v>
-                              </o>
-                              <v n="LValue">false</v>
-                              <v n="Boolean">true</v>
-                              <v n="IsInstance">false</v>
-                              <v n="Id">18L</v>
-                            </o>
-                            <v n="Id">17L</v>
                           </o>
                           <o>
                             <o n="Operand" t="Operand">
@@ -218,8 +219,8 @@ END_VAR]]></Declaration>
                           </o>
                           <o>
                             <o n="Operand" t="Operand">
-                              <v n="Operand">"F_CreateAmsNetId(AmsNetId)"</v>
-                              <v n="Type">"T_AmsNetId"</v>
+                              <v n="Operand">"amsNetId"</v>
+                              <v n="Type">"AMSNETID"</v>
                               <v n="Comment">""</v>
                               <v n="SymbolComment">""</v>
                               <v n="Address">""</v>
@@ -237,7 +238,7 @@ END_VAR]]></Declaration>
                           </o>
                           <o>
                             <o n="Operand" t="Operand">
-                              <v n="Operand">"???"</v>
+                              <v n="Operand">"Port"</v>
                               <v n="Type">"UINT"</v>
                               <v n="Comment">""</v>
                               <v n="SymbolComment">""</v>
@@ -256,8 +257,8 @@ END_VAR]]></Declaration>
                           </o>
                           <o>
                             <o n="Operand" t="Operand">
-                              <v n="Operand">"???"</v>
-                              <v n="Type">"STRING(255)"</v>
+                              <v n="Operand">"'OVEM-H-CE'"</v>
+                              <v n="Type">"STRING(INT#9)"</v>
                               <v n="Comment">""</v>
                               <v n="SymbolComment">""</v>
                               <v n="Address">""</v>
@@ -277,15 +278,13 @@ END_VAR]]></Declaration>
                         <o n="InputParam" t="ParamList">
                           <l2 n="Names" cet="String">
                             <v>ReadParameters</v>
-                            <v>SetParameters</v>
-                            <v>Execute</v>
+                            <v>WriteParameters</v>
                             <v>ApplicationTag</v>
                             <v>AmsNetID</v>
                             <v>Port</v>
                             <v>Name</v>
                           </l2>
                           <l2 n="Types" cet="String">
-                            <v>BOOL</v>
                             <v>BOOL</v>
                             <v>BOOL</v>
                             <v>STRING(32)</v>
@@ -299,6 +298,7 @@ END_VAR]]></Declaration>
                             <v>Busy</v>
                             <v>Done</v>
                             <v>Error</v>
+                            <v>ApplicationTagRead</v>
                             <v>AdsError</v>
                             <v>IolError</v>
                             <v>ErrorTxt</v>
@@ -307,6 +307,7 @@ END_VAR]]></Declaration>
                             <v>BOOL</v>
                             <v>BOOL</v>
                             <v>BOOL</v>
+                            <v>STRING(32)</v>
                             <v>E_AdsErr</v>
                             <v>E_IolError</v>
                             <v>STRING(255)</v>
@@ -318,7 +319,7 @@ END_VAR]]></Declaration>
                         <n n="STSnippet" />
                         <v n="ContainsExtensibleInputs">false</v>
                         <v n="ProvidesSTSnippet">false</v>
-                        <v n="Id">28L</v>
+                        <v n="Id">34L</v>
                       </o>
                     </l2>
                     <l2 n="Connectors" />

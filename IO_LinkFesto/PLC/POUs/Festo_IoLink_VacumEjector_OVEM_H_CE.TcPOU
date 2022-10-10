@@ -3,43 +3,170 @@
   <POU Name="Festo_IoLink_VacumEjector_OVEM_H_CE" Id="{b6245ee7-b1b9-443b-84b3-5d7151a3bb6b}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK Festo_IoLink_VacumEjector_OVEM_H_CE
 VAR_INPUT
-     ReadParameters : BOOL;             // Read parameters
-     SetParameters  : BOOL;             // Set parameters
-     ApplicationTag : STRING(32) := ''; // Application Tag 
-     AmsNetID       : STRING;           // AMS Net ID 
-     Port           : UINT;             // Port on IO link terminal 
-     Name           : STRING(255);      // Name of IO link device
+     ReadParameters  : BOOL;             // Read parameters
+     WriteParameters : BOOL;             // Set parameters
+     Reset           : BOOL;             // Reset application 
+     ApplicationTag  : STRING(32) := ''; // Application Tag 
+     AmsNetID        : AMSNETID;         // AMS Net ID 
+     Port            : UINT;             // Port on IO link terminal 
+     Name            : STRING(255);      // Name of IO link device
 END_VAR
 VAR_OUTPUT
-     Busy               : BOOL        := FALSE;
-     Done               : BOOL        := FALSE;
-     Error              : BOOL        := FALSE;
-     ApplicationTagRead : STRING(32)  := '';
+     Busy               : BOOL       := FALSE;
+     Done               : BOOL       := FALSE;
+     Error              : BOOL       := FALSE;
+     ApplicationTagRead : STRING(32) := '';
+     AirSaveFunction    : BOOL;
+     AutoDropTime       : INT; // 0x0198 - 80 
      AdsError           : E_AdsErr    := E_AdsErr.NOERR;
      IolError           : E_IolError  := E_IolError.NoError;
      ErrorTxt           : STRING(255) := '';
 END_VAR
 VAR
-     _InitDone       : BOOL := FALSE;
-     _ReadParameters : BOOL; // Read parameters
-     _SetParameters  : BOOL; // Set parameters
-     _ApplicationTag : STRING(32) := '';
-     _ReadState      : INT        := 0;
-     _SetState       : INT        := 0;
-     _fbIolSlave     : FB_IolStdVarSlave;
-     _fbIolVarSlave  : FB_IolSlave;
-     _hr             : HRESULT;
+     _InitDone           : BOOL := FALSE;
+     _ReadParameters     : BOOL; // Read parameters
+     _SetParameters      : BOOL; // Set parameters
+     _ApplicationTagRead : STRING(32) := '';
+     _ReadState          : INT        := 0;
+     _SetState           : INT        := 0;
+     _fbIolSlave         : FB_IolStdVarSlave;
+     _fbIolVarSlave      : FB_IolSlave;
+     _hr                 : HRESULT;
+     Start               : BOOL;
+
+     _State : INT; // case state	
+
+     _rtReadParameter  : R_TRIG;
+     _rtWriteParameter : R_TRIG;
+
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[]]></ST>
+      <ST><![CDATA[_rtReadParameter(CLK := ReadParameters);
+_rtWriteParameter(CLK := WriteParameters);
+
+CASE _State OF
+
+     00: //Init 
+          _InitDone                  := TRUE;
+          _fbIolSlave.MasterAoeNetId := F_CreateAmsNetId(AmsNetID); //Creates NETID String
+          _fbIolSlave.Port           := Port;
+          _fbIolSlave.Name           := Name;
+          _State                     := 10;
+
+     10: // Idle
+
+          IF _rtReadParameter.Q THEN
+               _State := 20;
+          ELSIF _rtWriteParameter.Q THEN
+               _State := 120;
+          END_IF
+
+     20: // Read Parameters 
+          // Read Application Tag
+
+          _hr := _fbIolSlave.ReadApplicationSpecificTag(ApplicationTagRead);
+
+          IF NOT F_IolIsBusy(_hr) THEN
+               IF FAILED(_hr) THEN
+                    Busy       := FALSE;
+                    Error      := TRUE;
+                    ErrorTxt   := _fbIolSlave.ErrorTxt; // TODO
+                    AdsError   := F_IolGetAdsError(_hr);
+                    IolError   := F_IolGetIolError(_hr);
+                    _ReadState := 999; // Error;
+               ELSE
+                    _ReadState := 30; // CHECK;
+               END_IF
+          END_IF
+		30: // Read
+
+
+
+     999: // Error state 
+
+          IF Reset THEN
+               Busy     := FALSE;
+               Error    := FALSE;
+               AdsError := E_AdsErr.NOERR;
+               IolError := E_IolError.NoError;
+               ErrorTxt := '';
+          END_IF
+END_CASE]]></ST>
     </Implementation>
     <Method Name="ReadApplicationTag" Id="{b0d51dd5-7959-4151-a6db-a6937abebc2d}">
       <Declaration><![CDATA[METHOD PRIVATE ReadApplicationTag : UDINT
-VAR_INPUT
+VAR_INPUT 
+	Execute : BOOL; 
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[]]></ST>
+        <ST><![CDATA[////
+// FB State Machine
+//
+CASE _ReadState OF
+
+     // IDLE
+     0: ;
+
+          IF Execute THEN
+               _ReadState := 10;
+          END_IF
+
+     10: // Read application Tag
+
+          _hr := _fbIolSlave.ReadApplicationSpecificTag(ApplicationTagRead);
+
+          IF NOT F_IolIsBusy(_hr) THEN
+               IF FAILED(_hr) THEN
+                    Busy       := FALSE;
+                    Error      := TRUE;
+                    ErrorTxt   := _fbIolSlave.ErrorTxt; // TODO
+                    AdsError   := F_IolGetAdsError(_hr);
+                    IolError   := F_IolGetIolError(_hr);
+                    _ReadState := 999; // Error;
+               ELSE
+                    _ReadState := 30; // CHECK;
+               END_IF
+          END_IF
+
+     // CHECK
+     30: IF ApplicationTag <> _ApplicationTagRead THEN
+               Busy     := FALSE;
+               Error    := TRUE;
+               ErrorTxt := 'sApplicationTag and sApplicationTagRead are not equal!';
+          ELSE
+               Busy := FALSE;
+               Done := TRUE;
+               //              _ReadState := 0;
+          END_IF
+
+     999: // Error state
+
+          IF NOT Execute THEN
+
+               _hr := _fbIolSlave.SysCmdApplicationReset();
+
+               IF NOT F_IolIsBusy(_hr) THEN
+                    IF FAILED(_hr) THEN
+                         Busy     := FALSE;
+                         Error    := TRUE;
+                         ErrorTxt := _fbIolSlave.ErrorTxt; 
+                         AdsError := F_IolGetAdsError(_hr);
+                         IolError := F_IolGetIolError(_hr);
+                         //_ReadState := 999; // Error;
+                    ELSE
+                         _ReadState := 0; // CHECK;
+                    END_IF
+               END_IF
+
+          END_IF
+
+END_CASE
+
+////
+// call FBs
+//
+_fbIolSlave();]]></ST>
       </Implementation>
     </Method>
     <Method Name="WriteApplicationTag" Id="{0004d753-af26-41e9-a2f2-32c49d39e4f1}">

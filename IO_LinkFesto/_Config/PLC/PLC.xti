@@ -1,15 +1,76 @@
 <?xml version="1.0"?>
 <TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.32" ClassName="CNestedPlcProjDef">
+	<DataTypes>
+		<DataType>
+			<Name GUID="{18071995-0000-0000-0000-000000000041}" TcBaseType="true" HideSubItems="true" CName="AmsNetId">AMSNETID</Name>
+			<BitSize>48</BitSize>
+			<BaseType GUID="{18071995-0000-0000-0000-000000000001}">BYTE</BaseType>
+			<ArrayInfo>
+				<LBound>0</LBound>
+				<Elements>6</Elements>
+			</ArrayInfo>
+			<Format>
+				<Printf>%d.%d.%d.%d.%d.%d</Printf>
+				<Parameter>[0]</Parameter>
+				<Parameter>[1]</Parameter>
+				<Parameter>[2]</Parameter>
+				<Parameter>[3]</Parameter>
+				<Parameter>[4]</Parameter>
+				<Parameter>[5]</Parameter>
+			</Format>
+		</DataType>
+		<DataType>
+			<Name GUID="{E73C367E-92B3-1139-8032-E11C3D2123C1}" Namespace="Tc2_System" AutoDeleteType="true">T_AmsNetID</Name>
+			<Comment><![CDATA[ TwinCAT AMS netID address string. ]]></Comment>
+			<BitSize>192</BitSize>
+			<BaseType GUID="{18071995-0000-0000-0000-000100000017}">STRING(23)</BaseType>
+		</DataType>
+	</DataTypes>
 	<Project GUID="{3050DC89-B547-4E71-8AAE-0C4ED9E11A42}" Name="PLC" PrjFilePath="..\..\PLC\PLC.plcproj" TmcFilePath="..\..\PLC\PLC.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
-		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2">
+		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcHash="{26842647-BCE4-2E2C-8D79-79E2184C2BEE}">
 			<Name>PLC Instance</Name>
 			<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
+			<Vars VarGrpType="1">
+				<Name>PlcTask Inputs</Name>
+				<Var>
+					<Name>MAIN.Port</Name>
+					<Type>UINT</Type>
+				</Var>
+				<Var>
+					<Name>MAIN.amsNetId</Name>
+					<Type GUID="{18071995-0000-0000-0000-000000000041}">AMSNETID</Type>
+				</Var>
+				<Var>
+					<Name>MAIN.pressure</Name>
+					<Type>UINT</Type>
+				</Var>
+				<Var>
+					<Name>MAIN.netid</Name>
+					<Type GUID="{E73C367E-92B3-1139-8032-E11C3D2123C1}" Namespace="Tc2_System">T_AmsNetID</Type>
+				</Var>
+			</Vars>
 			<Contexts>
 				<Context>
-					<Id>1</Id>
-					<Name>Default</Name>
+					<Id NeedCalleeCall="true">0</Id>
+					<Name>PlcTask</Name>
+					<ManualConfig>
+						<OTCID>#x02010030</OTCID>
+					</ManualConfig>
+					<Priority>20</Priority>
+					<CycleTime>10000000</CycleTime>
 				</Context>
 			</Contexts>
+			<TaskPouOids>
+				<TaskPouOid Prio="20" OTCID="#x08502001"/>
+			</TaskPouOids>
 		</Instance>
 	</Project>
+	<Mappings>
+		<OwnerA Name="PLC Instance">
+			<OwnerB Name="TIID^Device 1 (EtherCAT)^Term 1 (EK1200)^Term 2 (EL6224)">
+				<Link VarA="PlcTask Inputs^MAIN.amsNetId" VarB="InfoData^AoeNetId"/>
+				<Link VarA="PlcTask Inputs^MAIN.pressure" VarB="IO-Link Port1_in^Pressure value"/>
+			</OwnerB>
+		</OwnerA>
+	</Mappings>
 </TcSmItem>
